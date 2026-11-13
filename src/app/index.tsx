@@ -1,98 +1,155 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import ProductCard from "../components/ProductCard";
 
 export default function HomeScreen() {
+  const handleAddToCart = () => {
+    Alert.alert("ASIMIC GLOBAL TECH", "Product added to cart!");
+  };
+
+  const categories = ["Laptops", "Monitors", "Accessories"];
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.brand}>ASIMIC GLOBAL TECH</Text>
+          <Text style={styles.tagline}>Tech You Cherish Service You Trust</Text>
+        </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <Text style={styles.cart}>🛒</Text>
+      </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      {/* Welcome Section */}
+      <View style={styles.welcome}>
+        <Text style={styles.heading}>Find Your Next Laptop</Text>
+        <Text style={styles.description}>
+          Quality laptops. Affordable prices.
+        </Text>
+      </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      {/* Categories */}
+      <View style={styles.categories}>
+        {categories.map((category) => (
+          <Pressable
+            key={category}
+            style={styles.categoryButton}
+            onPress={() => Alert.alert("Category", category)}
+          >
+            <Text style={styles.categoryText}>{category}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {/* Products */}
+      <Text style={styles.sectionTitle}>Featured Laptops</Text>
+
+      <ProductCard
+        name="HP EliteBook 840 G5"
+        price={350000}
+        specifications="Core i5 | 8GB RAM | 256GB SSD"
+        imageUrl="https://placehold.co/400x300/png"
+        onAddToCart={handleAddToCart}
+      />
+
+      <ProductCard
+        name="Dell Latitude 7490"
+        price={320000}
+        specifications="Core i5 | 8GB RAM | 256GB SSD"
+        imageUrl="https://placehold.co/400x300/png"
+        onAddToCart={handleAddToCart}
+      />
+
+      <ProductCard
+        name="Lenovo ThinkPad T480"
+        price={380000}
+        specifications="Core i5 | 16GB RAM | 512GB SSD"
+        imageUrl="https://placehold.co/400x300/png"
+        onAddToCart={handleAddToCart}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: "#F9FAFB",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#FFFFFF",
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+
+  brand: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#16A34A",
   },
-  title: {
-    textAlign: 'center',
+
+  tagline: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 4,
   },
-  code: {
-    textTransform: 'uppercase',
+
+  cart: {
+    fontSize: 25,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+
+  welcome: {
+    padding: 20,
+  },
+
+  heading: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#111827",
+  },
+
+  description: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 6,
+  },
+
+  categories: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+
+  categoryButton: {
+    backgroundColor: "#E8F5E9",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+
+  categoryText: {
+    color: "#16A34A",
+    fontWeight: "600",
+    fontSize: 12,
+  },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginHorizontal: 15,
+    marginBottom: 10,
+    color: "#111827",
   },
 });
