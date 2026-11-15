@@ -1,80 +1,50 @@
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import ProductCard from "../components/ProductCard";
+import { useRouter } from "expo-router";
+
+import ProductCard from "@/components/ProductCard";
+import { useCart } from "@/context/CartContext";
 
 export default function HomeScreen() {
-  const handleAddToCart = () => {
-    Alert.alert("ASIMIC GLOBAL TECH", "Product added to cart!");
-  };
+  const { products, cartItems, cartCount, addToCart, removeFromCart } =
+    useCart();
 
-  const categories = ["Laptops", "Monitors", "Accessories"];
+  const router = useRouter();
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.brand}>ASIMIC GLOBAL TECH</Text>
-          <Text style={styles.tagline}>Tech You Cherish Service You Trust</Text>
-        </View>
+        <Text style={styles.logo}>ASIMIC TECH</Text>
 
-        <Text style={styles.cart}>🛒</Text>
+        <Pressable
+          style={styles.cartButton}
+          onPress={() => router.push("/tabs/cart")}
+        >
+          <Text style={styles.cartButtonText}>View Cart ({cartCount})</Text>
+        </Pressable>
       </View>
 
-      {/* Welcome Section */}
-      <View style={styles.welcome}>
-        <Text style={styles.heading}>Find Your Next Laptop</Text>
-        <Text style={styles.description}>
-          Quality laptops. Affordable prices.
-        </Text>
-      </View>
+      <Text style={styles.heading}>Shop Quality Laptops</Text>
 
-      {/* Categories */}
-      <View style={styles.categories}>
-        {categories.map((category) => (
-          <Pressable
-            key={category}
-            style={styles.categoryButton}
-            onPress={() => Alert.alert("Category", category)}
-          >
-            <Text style={styles.categoryText}>{category}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <Text style={styles.subtitle}>Tech You Cherish</Text>
 
-      {/* Products */}
-      <Text style={styles.sectionTitle}>Featured Laptops</Text>
+      {products.map((product) => {
+        const quantityInCart =
+          cartItems.find((item) => item.id === product.id)?.quantity ?? 0;
 
-      <ProductCard
-        name="HP EliteBook 840 G5"
-        price={350000}
-        specifications="Core i5 | 8GB RAM | 256GB SSD"
-        imageUrl="https://placehold.co/400x300/png"
-        onAddToCart={handleAddToCart}
-      />
-
-      <ProductCard
-        name="Dell Latitude 7490"
-        price={320000}
-        specifications="Core i5 | 8GB RAM | 256GB SSD"
-        imageUrl="https://placehold.co/400x300/png"
-        onAddToCart={handleAddToCart}
-      />
-
-      <ProductCard
-        name="Lenovo ThinkPad T480"
-        price={380000}
-        specifications="Core i5 | 16GB RAM | 512GB SSD"
-        imageUrl="https://placehold.co/400x300/png"
-        onAddToCart={handleAddToCart}
-      />
+        return (
+          <ProductCard
+            key={product.id}
+            name={product.name}
+            price={product.price}
+            specifications={product.specifications}
+            imageUrl={product.imageUrl}
+            quantityInCart={quantityInCart}
+            onAddToCart={() => addToCart(product)}
+            onRemoveFromCart={() => removeFromCart(product.id)}
+          />
+        );
+      })}
     </ScrollView>
   );
 }
@@ -82,74 +52,45 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F5F5F5",
+    padding: 15,
   },
 
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#FFFFFF",
+    marginBottom: 25,
   },
 
-  brand: {
+  logo: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#16A34A",
+    color: "#008000",
   },
 
-  tagline: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginTop: 4,
+  cartButton: {
+    backgroundColor: "#008000",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
   },
 
-  cart: {
-    fontSize: 25,
-  },
-
-  welcome: {
-    padding: 20,
+  cartButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 14,
   },
 
   heading: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#111827",
+    marginBottom: 5,
   },
 
-  description: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginTop: 6,
-  },
-
-  categories: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingHorizontal: 10,
-    marginBottom: 20,
-  },
-
-  categoryButton: {
-    backgroundColor: "#E8F5E9",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-
-  categoryText: {
-    color: "#16A34A",
-    fontWeight: "600",
-    fontSize: 12,
-  },
-
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginHorizontal: 15,
-    marginBottom: 10,
-    color: "#111827",
+  subtitle: {
+    fontSize: 15,
+    color: "#666666",
+    marginBottom: 15,
   },
 });
