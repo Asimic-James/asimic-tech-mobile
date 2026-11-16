@@ -1,72 +1,88 @@
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import ProductCard from "@/components/ProductCard";
-import { useCart } from "@/context/CartContext";
+import { ApiProduct, getProducts } from "@/services/productService";
 
 export default function ProductsScreen() {
-  const { products, cartItems, addToCart, removeFromCart } = useCart();
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const loadProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const filteredProducts = products.filter((product) => {
-    const searchText = searchQuery.toLowerCase();
+      const data = await getProducts();
 
+      setProducts(data);
+    } catch (err) {
+      setError("Unable to load products. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadProducts();
+  }, [loadProducts]);
+
+  if (loading) {
     return (
-      product.name.toLowerCase().includes(searchText) ||
-      product.specifications.toLowerCase().includes(searchText)
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#008000" />
+
+        <Text style={styles.message}>Loading products...</Text>
+      </View>
     );
-  });
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>{error}</Text>
+
+        <Pressable
+          style={styles.retryButton}
+          onPress={() => void loadProducts()}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Our Products</Text>
-        <Text style={styles.subtitle}>Find the right laptop for you.</Text>
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.heading}>Products Catalog</Text>
 
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search laptops by name or specs..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        autoCapitalize="none"
-        clearButtonMode="while-editing"
+      <FlatList
+        data={products}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.productName}>{item.title}</Text>
+
+            <Text style={styles.description} numberOfLines={2}>
+              {item.description}
+            </Text>
+
+            <Text style={styles.price}>${item.price.toFixed(2)} USD</Text>
+          </View>
+        )}
+        ListEmptyComponent={
+          <Text style={styles.message}>No products found.</Text>
+        }
       />
-
-      <Text style={styles.resultText}>
-        {filteredProducts.length} product(s) found
-      </Text>
-
-      {filteredProducts.length > 0 ? (
-        filteredProducts.map((product) => {
-          const quantityInCart =
-            cartItems.find((item) => item.id === product.id)?.quantity ?? 0;
-
-          return (
-            <ProductCard
-              key={product.id}
-              name={product.name}
-              price={product.price}
-              specifications={product.specifications}
-              imageUrl={product.imageUrl}
-              quantityInCart={quantityInCart}
-              onAddToCart={() => addToCart(product)}
-              onRemoveFromCart={() => removeFromCart(product.id)}
-            />
-          );
-        })
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No products found</Text>
-
-          <Text style={styles.emptyMessage}>
-            Try searching with a different name or specification.
-          </Text>
-        </View>
-      )}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -77,57 +93,67 @@ const styles = StyleSheet.create({
     padding: 15,
   },
 
-  header: {
-    marginBottom: 20,
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
 
-  title: {
-    fontSize: 26,
+  heading: {
+    fontSize: 24,
     fontWeight: "bold",
     color: "#008000",
-  },
-
-  subtitle: {
-    fontSize: 15,
-    color: "#666666",
-    marginTop: 5,
-  },
-
-  searchInput: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#DDDDDD",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
     marginBottom: 15,
   },
 
-  resultText: {
+  message: {
+    fontSize: 16,
+    color: "#666666",
+    marginTop: 10,
+  },
+
+  errorText: {
+    color: "#DC2626",
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 15,
+  },
+
+  retryButton: {
+    backgroundColor: "#008000",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+
+  productName: {
+    fontSize: 17,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+
+  description: {
     fontSize: 14,
     color: "#666666",
     marginBottom: 10,
   },
 
-  emptyContainer: {
-    alignItems: "center",
-    padding: 30,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    marginTop: 20,
-  },
-
-  emptyTitle: {
-    fontSize: 18,
+  price: {
+    fontSize: 17,
     fontWeight: "bold",
-    color: "#333333",
-  },
-
-  emptyMessage: {
-    fontSize: 14,
-    color: "#777777",
-    textAlign: "center",
-    marginTop: 8,
+    color: "#008000",
   },
 });
